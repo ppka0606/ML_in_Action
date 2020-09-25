@@ -94,16 +94,48 @@ def createTree(dataset):
                 (dataset[:, -1]).astype(int)).argmax()
     return returnDict
 
+def classify(tree, featureVector):
+    if tree["confirmedLabel"] == -1:
+        classifyFeatureIndex = tree["featureIndex"]
+        classifyFeatureThreshold = tree["threshold"]
+        if featureVector[classifyFeatureIndex] <= classifyFeatureThreshold:
+            return(classify(tree["leftTree"], featureVector))
+        elif featureVector[classifyFeatureIndex] > classifyFeatureThreshold:
+            return(classify(tree["rightTree"], featureVector))
+    else:
+        return tree["confirmedLabel"]
+
+def classifyGroup(tree, testSet):
+    """
+    用训练的tree对trainSet中的数据进行分类
+    """
+    testset = np.delete(testSet, -1, 1)
+
+    m = np.size(testset, 0)
+    labels = np.zeros(m)
+
+    for i in range(m):
+        featureVector = testset[i]
+        labels[i] = classify(tree, featureVector)
+
+    return labels
 
 if __name__ == '__main__':
     df = pd.read_csv('chapter9\Iris-train.txt', sep=' ')
     df_value = df.values
-
     dataset = np.delete(df_value, -1, 1)
-    label = dataset[:, -1]
 
     tree = createTree(dataset)
     print(tree)
+
+    df2 = pd.read_csv('chapter9\Iris-test.txt', sep = ' ')
+    df2_value = df2.values
+    testSet = np.delete(df2_value, -1, 1)
+    label = testSet[:, -1]
+    testResult = classifyGroup(tree, testSet)
+    print('Acurracy: {} ' .format((testResult == label).sum() / np.size(testSet, 0)))
+
+
 
     # self_dataset = np.array([[1, 1, 0],
     #                          [2, 1, 0],
