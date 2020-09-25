@@ -11,7 +11,9 @@
 
 import pandas as pd
 import numpy as np
+from math import log
 
+from treePlotter import *
 
 def splitDataset(dataset, feature, threshold):
     """
@@ -30,11 +32,16 @@ def calculateError(dataset):
     """
     labels = dataset[:, -1]
     labelset = set(labels)
-    gini = 1
+    # gini = 1
+    # for label in labelset:
+    #     gini -= ((labels == label).sum() / np.size(labels)) ** 2
+    # return gini
+    shannonEnt = 0
     for label in labelset:
-        gini -= ((labels == label).sum() / np.size(labels)) ** 2
-    return gini
-
+        rate = (labels == label).sum() / np.size(labels)
+        shannonEnt -= rate * log(rate, 2)
+    
+    return shannonEnt
 
 def chooseSplitFeatureValue(dataset):
     """
@@ -120,6 +127,27 @@ def classifyGroup(tree, testSet):
 
     return labels
 
+def adjustForPlot(tree):
+    """
+    重新调整表示tree的字典，使其适应决策树绘制函数
+    新的字典结构为：{"(label_content)":{feature_value1:label / subtree_1, feature_value2: label / subtree2, ...}}
+    """
+    key = 'feature' + str(tree["featureIndex"]) + '<=' +str(tree["threshold"])
+    value = {"yes":None, "no": None}
+    leftLabel, rightLabel = (tree["leftTree"]["confirmedLabel"],tree["rightTree"]["confirmedLabel"])
+    if leftLabel != -1:
+        value["yes"] = leftLabel
+    else:
+        value["yes"] = adjustForPlot(tree["leftTree"])
+
+    if rightLabel != -1:
+        value["no"] = rightLabel
+    else:
+        value["no"] = adjustForPlot(tree["rightTree"])
+    return ({key:value})
+
+
+
 if __name__ == '__main__':
     df = pd.read_csv('chapter9\Iris-train.txt', sep=' ')
     df_value = df.values
@@ -135,6 +163,9 @@ if __name__ == '__main__':
     testResult = classifyGroup(tree, testSet)
     print('Acurracy: {} ' .format((testResult == label).sum() / np.size(testSet, 0)))
 
+    plotingTree = adjustForPlot(tree)
+    print(plotingTree)
+    createPlot(plotingTree)
 
 
     # self_dataset = np.array([[1, 1, 0],
