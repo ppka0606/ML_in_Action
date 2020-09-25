@@ -136,12 +136,12 @@ def adjustForPlot(tree):
     value = {"yes":None, "no": None}
     leftLabel, rightLabel = (tree["leftTree"]["confirmedLabel"],tree["rightTree"]["confirmedLabel"])
     if leftLabel != -1:
-        value["yes"] = leftLabel
+        value["yes"] = int(leftLabel)
     else:
         value["yes"] = adjustForPlot(tree["leftTree"])
 
     if rightLabel != -1:
-        value["no"] = rightLabel
+        value["no"] = int(rightLabel)
     else:
         value["no"] = adjustForPlot(tree["rightTree"])
     return ({key:value})
