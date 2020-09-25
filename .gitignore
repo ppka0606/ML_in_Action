@@ -1,7 +1,3 @@
 MLiA_SourceCode\machinelearninginaction\
 
 *.pyc
-
-chapter9/Iris-test.txt
-chapter9/Iris-train.txt
-.gitignore
